@@ -13,11 +13,12 @@ failed_attempts = {}            # brute-force tracking
 blocked_ips = set()
 
 # ================= HELPERS =================
-def log_attempt(username, ip, success):
+def log_attempt(username, ip, status):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    status = "SUCCESS" if success else "FAILED"
+
     with open(LOG_FILE, "a") as f:
         f.write(f"{timestamp} | {username} | {ip} | {status}\n")
+
 
 def is_suspicious(ip):
     return failed_attempts.get(ip, 0) >= MAX_FAILED_ATTEMPTS
@@ -63,7 +64,7 @@ def login(username, password, ip):
     if len(attempts) > MAX_ATTEMPTS_PER_WINDOW:
         blocked_ips.add(ip)
         print(f"⏱️ RATE LIMIT: IP {ip} temporarily BLOCKED")
-        log_attempt(username, ip, False)
+        log_attempt(username, ip, "RATE_LIMIT")
         return
 
     # 3️⃣ PASSWORD CHECK
@@ -75,11 +76,13 @@ def login(username, password, ip):
         print("Login successful ✅")
     else:
         failed_attempts[ip] = failed_attempts.get(ip, 0) + 1
-        log_attempt(username, ip, False)
+        log_attempt(username, ip, "FAILED_PASSWORD")
 
         if is_suspicious(ip):
             blocked_ips.add(ip)
             print(f"🚫 IP {ip} has been BLOCKED due to repeated failures")
+            log_attempt(username, ip, "BLOCKED_IP")
+
         else:
             print("Login failed ❌")
 
