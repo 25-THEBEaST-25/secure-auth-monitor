@@ -2,9 +2,9 @@ from datetime import datetime
 import time
 
 # ================= CONFIG =================
-RATE_LIMIT_WINDOW = 60          # seconds
-MAX_ATTEMPTS_PER_WINDOW = 5     # rate limit
-MAX_FAILED_ATTEMPTS = 3         # brute-force limit
+RATE_LIMIT_WINDOW = 10          # seconds
+MAX_ATTEMPTS_PER_WINDOW = 3     # rate limit
+MAX_FAILED_ATTEMPTS = 10         # brute-force limit
 LOG_FILE = "logs.txt"
 
 # ================= STATE =================
@@ -25,8 +25,26 @@ def is_suspicious(ip):
 def is_blocked(ip):
     return ip in blocked_ips
 
+def login(username, password, ip):
+    now = time.time()
+
+    # ===== RATE LIMIT CHECK =====
+    attempts = attempt_timestamps.get(ip, [])
+    attempts = [t for t in attempts if now - t < RATE_LIMIT_WINDOW]
+
+    if len(attempts) >= MAX_ATTEMPTS_PER_WINDOW:
+        print(f"⏱️ RATE LIMIT TRIGGERED for IP {ip}")
+        blocked_ips.add(ip)
+        log_attempt(username, ip, False)
+        return
+
+    attempts.append(now)
+    attempt_timestamps[ip] = attempts
+
+
 # ================= MAIN LOGIN =================
 def login(username, password, ip):
+    
     # 1️⃣ BLOCKED IP CHECK
     if is_blocked(ip):
         print(f"🚫 BLOCKED: Access denied for IP {ip}")
@@ -66,8 +84,8 @@ def login(username, password, ip):
             print("Login failed ❌")
 
 # ================= TEST SIMULATION =================
-login("admin", "1234", "10.0.0.99")
-login("admin", "password", "10.0.0.99")
-login("admin", "letmein", "10.0.0.99")
-login("admin", "wrongagain", "10.0.0.99")
-login("admin", "admin123", "10.0.0.99")
+login("admin", "123", "1.1.1.1")
+login("admin", "123", "1.1.1.1")
+login("admin", "123", "1.1.1.1")
+login("admin", "123", "1.1.1.1")
+
