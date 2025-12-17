@@ -1,6 +1,7 @@
 from datetime import datetime
 import time
 import os
+import bcrypt
 
 # ================= CONFIG =================
 RATE_LIMIT_WINDOW = 10          # seconds
@@ -8,6 +9,12 @@ MAX_ATTEMPTS_PER_WINDOW = 3
 MAX_RATE_LIMIT_STRIKES = 3
 RATE_LIMIT_BLOCK_TIME = 30      # seconds
 LOG_FILE = "logs.txt"
+
+# ================= PASSWORD (HASHED ONCE) =================
+REAL_PASSWORD_HASH = bcrypt.hashpw(
+    b"admin123",
+    bcrypt.gensalt()
+)
 
 # ================= STATE =================
 attempt_timestamps = {}         # ip -> [timestamps]
@@ -74,16 +81,13 @@ def login(username, password, ip):
 
         return
 
-    # 4️⃣ PASSWORD CHECK
-    REAL_PASSWORD = "admin123"
-
-    if password == REAL_PASSWORD:
+    # 4️⃣ PASSWORD CHECK (bcrypt)
+    if bcrypt.checkpw(password.encode(), REAL_PASSWORD_HASH):
         print("✅ Login successful")
         log_attempt(username, ip, "SUCCESS")
     else:
         print("❌ Login failed")
         log_attempt(username, ip, "FAILED_PASSWORD")
-
 
 # ================= TEST DRIVER =================
 if __name__ == "__main__":
@@ -92,13 +96,15 @@ if __name__ == "__main__":
     for _ in range(5):
         login("admin", "wrong", "5.5.5.5")
 
-    time.sleep(2)
+    print("⏳ Waiting for temp block to expire...\n")
+    time.sleep(31)
 
     print("\n--- Attack round 2 ---")
     for _ in range(5):
         login("admin", "wrong", "5.5.5.5")
 
-    time.sleep(2)
+    print("⏳ Waiting for temp block to expire...\n")
+    time.sleep(31)
 
     print("\n--- Attack round 3 ---")
     for _ in range(5):
