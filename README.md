@@ -98,6 +98,48 @@ This project demonstrates core defensive security concepts used in:
 - Brute-force attack detection
 - Security logging and monitoring
 
+## 🧠 Threat Model
+
+This project focuses on defending authentication systems against
+common real-world attacks, including:
+
+- **Brute-force attacks** – rapid password guessing
+- **Credential stuffing** – reused leaked credentials
+- **Abusive login attempts** – automated and scripted abuse
+- **IP rotation attacks** – bypassing single-layer IP limits
+
+The goal is not just detection, but **resilient abuse prevention**.
+
+---
+
+## 🛡️ Defense Layers Implemented
+
+This system uses a **defense-in-depth approach**:
+
+1. **Rate Limiting**
+   - Sliding window tracking per IP
+   - Prevents high-speed automated attacks
+
+2. **Temporary IP Blocking**
+   - Cooldown blocks after rate-limit violations
+   - Automatically lifted after time window
+
+3. **Permanent IP Ban**
+   - Escalation after repeated abuse
+   - Stops persistent malicious sources
+
+4. **Account-Level Lockout**
+   - Locks user accounts after repeated failed attempts
+   - Protects users even when attackers rotate IPs
+
+5. **Progressive Failure Delay**
+   - Adds artificial delay on failed logins
+   - Makes brute-force attacks impractical
+
+6. **State Reset on Success**
+   - Clears penalties after legitimate login
+   - Prevents unfair lockouts
+
 ---
 
 ## 📌 Future Improvements
