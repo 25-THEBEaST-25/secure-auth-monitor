@@ -140,6 +140,19 @@ This system uses a **defense-in-depth approach**:
    - Clears penalties after legitimate login
    - Prevents unfair lockouts
 
+## 🎯 Why This Project Matters
+
+Authentication endpoints are one of the most attacked parts of any system.
+Relying on a single defense (like rate limiting alone) is not sufficient
+against modern attack patterns.
+
+This project demonstrates how **layered security controls work together**
+to protect users and infrastructure in real-world systems.
+
+It reflects how production systems in banking, SaaS platforms, and
+enterprise applications approach authentication security — focusing on
+**resilience, fairness, and abuse prevention**, not just blocking traffic.
+
 ---
 
 ## 📌 Future Improvements
