@@ -1,63 +1,84 @@
-from datetime import datetime
 import time
-import os
 import bcrypt
+from datetime import datetime
 
-# ================= CONFIG =================
-RATE_LIMIT_WINDOW = 10          # seconds
-MAX_ATTEMPTS_PER_WINDOW = 3
+# ================= CONFIGURATION =================
+RATE_LIMIT_WINDOW = 60  # seconds
+MAX_ATTEMPTS_PER_WINDOW = 5
 MAX_RATE_LIMIT_STRIKES = 3
-RATE_LIMIT_BLOCK_TIME = 30      # seconds
-LOG_FILE = "logs.txt"
+TEMP_BLOCK_DURATION = 300  # seconds
 
-# ================= PASSWORD (HASHED ONCE) =================
-REAL_PASSWORD_HASH = bcrypt.hashpw(
-    b"admin123",
-    bcrypt.gensalt()
-)
+# Global state tracking
+rate_limit_strikes = {}
+blocked_ips = set()
+attempt_timestamps = {}
+temp_blocked_at = {}
+ACCOUNT_LOCK_THRESHOLD = 5
+ACCOUNT_LOCK_DURATION = 300  # seconds
 
-# ================= STATE =================
-attempt_timestamps = {}         # ip -> [timestamps]
-rate_limit_strikes = {}         # ip -> count
-blocked_ips = set()             # permanently blocked IPs
-temp_blocked_at = {}            # ip -> timestamp
+account_failures = {}
+account_locked_at = {}
 
-# ================= LOGGING =================
+
+# User credentials (password hashes generated with bcrypt)
+USERS = {
+    "admin": {"password_hash": bcrypt.hashpw(b"admin123", bcrypt.gensalt())},
+    "alice": {"password_hash": bcrypt.hashpw(b"user123", bcrypt.gensalt())},
+}
+
+# Helper functions
 def log_attempt(username, ip, status):
-    if not os.path.exists(LOG_FILE):
-        open(LOG_FILE, "w").close()
+    """Log authentication attempts"""
+    print(f"[LOG] {datetime.now()} - User: {username}, IP: {ip}, Status: {status}")
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(LOG_FILE, "a") as f:
-        f.write(f"{timestamp} | {username} | {ip} | {status}\n")
-
-# ================= HELPERS =================
 def is_temp_blocked(ip):
+    """Check if IP is temporarily blocked"""
     if ip not in temp_blocked_at:
         return False
+    if time.time() - temp_blocked_at[ip] > TEMP_BLOCK_DURATION:
+        del temp_blocked_at[ip]
+        return False
+    return True
 
-    if time.time() - temp_blocked_at[ip] < RATE_LIMIT_BLOCK_TIME:
-        return True
+def authorize(username, role):
+    """Check if user has the required role"""
+    return username == "admin" and role == "admin"
 
-    # unblock after timeout
-    del temp_blocked_at[ip]
-    attempt_timestamps.pop(ip, None)
-    return False
+def failure_delay(ip):
+    strikes = rate_limit_strikes.get(ip, 0)
+    delay = min(2 + strikes, 5)  # max 5 seconds
+    time.sleep(delay)
 
-# ================= MAIN LOGIN =================
+def is_account_locked(username):
+    if username not in account_locked_at:
+        return False
+
+    if time.time() - account_locked_at[username] > ACCOUNT_LOCK_DURATION:
+        del account_locked_at[username]
+        account_failures.pop(username, None)
+        return False
+
+    return True
+
 def login(username, password, ip):
 
     # 1️⃣ PERMANENT BLOCK CHECK
     if ip in blocked_ips:
         print(f"⛔ BLOCKED: Access denied for IP {ip}")
-        log_attempt(username, ip, "BLOCKED")
+        log_attempt(username, ip, "PERMANENT_BLOCK")
         return
 
-    # 2️⃣ TEMP RATE-LIMIT CHECK
+    # 2️⃣ TEMP BLOCK CHECK
     if is_temp_blocked(ip):
         print(f"⏳ TEMP BLOCK: IP {ip}")
-        log_attempt(username, ip, "TEMP_BLOCKED")
+        log_attempt(username, ip, "TEMP_BLOCK")
         return
+    # 🔐 ACCOUNT LOCK CHECK
+    if is_account_locked(username):
+        print(f"🔒 ACCOUNT LOCKED: {username}")
+        log_attempt(username, ip, "ACCOUNT_LOCKED")
+        return
+
 
     # 3️⃣ RATE LIMIT TRACKING
     now = time.time()
@@ -81,34 +102,46 @@ def login(username, password, ip):
 
         return
 
-    # 4️⃣ PASSWORD CHECK (bcrypt)
-    if bcrypt.checkpw(password.encode(), REAL_PASSWORD_HASH):
+    # 4️⃣ AUTHENTICATION (bcrypt)
+    user = USERS.get(username)
+
+    if not user:
+        print("❌ Unknown user")
+        log_attempt(username, ip, "UNKNOWN_USER")
+        return
+
+    if bcrypt.checkpw(password.encode(), user["password_hash"]):
+        account_failures.pop(username, None)
+        account_locked_at.pop(username, None)
+
+        attempt_timestamps.pop(ip, None)
+        rate_limit_strikes.pop(ip, None)
+
         print("✅ Login successful")
         log_attempt(username, ip, "SUCCESS")
+
+        # 5️⃣ AUTHORIZATION (RBAC)
+        if authorize(username, "admin"):
+            print("👑 Admin access granted")
+        else:
+            print("🔒 User access granted")
     else:
         print("❌ Login failed")
         log_attempt(username, ip, "FAILED_PASSWORD")
 
+        account_failures[username] = account_failures.get(username, 0) + 1
+
+        if account_failures[username] >= ACCOUNT_LOCK_THRESHOLD:
+            account_locked_at[username] = time.time()
+            print(f"🔒 ACCOUNT LOCKED due to failures: {username}")
+            log_attempt(username, ip, "ACCOUNT_LOCKED")
+
+        failure_delay(ip)
+
+
+
 # ================= TEST DRIVER =================
-if __name__ == "__main__":
+login("admin", "admin123", "9.9.9.9")   # 👑 Admin
+login("alice", "user123", "8.8.8.8")    # 🔒 User
+login("alice", "wrong", "8.8.8.8")      # ❌ Fail
 
-    print("\n--- Attack round 1 ---")
-    for _ in range(5):
-        login("admin", "wrong", "5.5.5.5")
-
-    print("⏳ Waiting for temp block to expire...\n")
-    time.sleep(31)
-
-    print("\n--- Attack round 2 ---")
-    for _ in range(5):
-        login("admin", "wrong", "5.5.5.5")
-
-    print("⏳ Waiting for temp block to expire...\n")
-    time.sleep(31)
-
-    print("\n--- Attack round 3 ---")
-    for _ in range(5):
-        login("admin", "wrong", "5.5.5.5")
-
-    print("\n--- Legit login ---")
-    login("admin", "admin123", "9.9.9.9")
