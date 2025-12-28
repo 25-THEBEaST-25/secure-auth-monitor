@@ -1,162 +1,83 @@
 # SecureAuth Monitor 🔐
 
-SecureAuth Monitor is a Python-based authentication monitoring tool
-that detects brute-force login attempts and logs suspicious activity.
-It simulates how real-world systems track and respond to repeated
-failed login attempts.
+SecureAuth Monitor is a Python-based authentication security system
+designed to detect and respond to brute-force and abusive login behavior.
+It simulates how real-world systems monitor authentication attempts and
+apply defensive controls to protect users and infrastructure.
 
 ---
 
-## 🚀 Features
+## 🧠 Problem
+
+Authentication endpoints are one of the most frequently attacked parts
+of modern applications. Common threats include brute-force attacks,
+credential stuffing, and automated abuse.
+
+Relying on a single defense mechanism is often insufficient against
+real-world attack patterns.
+
+---
+
+## 🛡️ Solution
+
+SecureAuth Monitor applies a **defense-in-depth approach** to
+authentication security by tracking login behavior, detecting abuse
+patterns, and applying escalating protections.
+
+---
+
+## 🚀 Key Features
 - Logs every login attempt with timestamp, IP address, and status
-- Detects repeated failed login attempts from the same IP
-- Raises alerts for suspicious (brute-force-like) behavior
-- Uses persistent logging similar to real authentication systems
+- Tracks repeated failed login attempts per IP
+- Detects brute-force-like behavior using configurable thresholds
+- Resets failure counters after successful authentication
+- Persistent logging for audit and analysis
 
 ---
 
-## 🧠 How It Works
-- Each login attempt is recorded in a log file
-- Failed attempts are counted per IP address
-- If failures exceed a threshold (default: 3), an alert is triggered
-- A successful login resets the failure counter for that IP
+## 🔁 Authentication Flow
+
+1. Login attempt is received
+2. Attempt is logged with metadata (IP, timestamp, status)
+3. Failed attempts are tracked per IP
+4. Threshold violations trigger security alerts
+5. Successful login clears accumulated penalties
 
 ---
-
-## ▶️ Example Output
-
-# SecureAuth Monitor 🔐
-
-SecureAuth Monitor is a Python-based authentication monitoring tool
-that detects brute-force login attempts and logs suspicious activity.
-It simulates how real-world systems track and respond to repeated
-failed login attempts.
-
----
-
-## 🚀 Features
-- Logs every login attempt with timestamp, IP address, and status
-- Detects repeated failed login attempts from the same IP
-- Raises alerts for suspicious (brute-force-like) behavior
-- Uses persistent logging similar to real authentication systems
-
----
-
-## 🧠 How It Works
-- Each login attempt is recorded in a log file
-- Failed attempts are counted per IP address
-- If failures exceed a threshold (default: 3), an alert is triggered
-- A successful login resets the failure counter for that IP
-
----
-
-## ▶️ Example Output
-
-# SecureAuth Monitor 🔐
-
-SecureAuth Monitor is a Python-based authentication monitoring tool
-that detects brute-force login attempts and logs suspicious activity.
-It simulates how real-world systems track and respond to repeated
-failed login attempts.
-
----
-
-## 🚀 Features
-- Logs every login attempt with timestamp, IP address, and status
-- Detects repeated failed login attempts from the same IP
-- Raises alerts for suspicious (brute-force-like) behavior
-- Uses persistent logging similar to real authentication systems
-
----
-
-## 🧠 How It Works
-- Each login attempt is recorded in a log file
-- Failed attempts are counted per IP address
-- If failures exceed a threshold (default: 3), an alert is triggered
-- A successful login resets the failure counter for that IP
-
----
-
-## ▶️ Example Output
-
-Login failed ❌
-Login failed ❌
-⚠️ ALERT: Suspicious activity detected from IP 192.168.1.10
-
----
-
-## 🛠 Tech Stack
-- Python 3
-- File-based logging
-- Git & GitHub for version control
-
----
-
-## 🎯 Use Case
-This project demonstrates core defensive security concepts used in:
-- Authentication systems
-- Brute-force attack detection
-- Security logging and monitoring
 
 ## 🧠 Threat Model
 
-This project focuses on defending authentication systems against
-common real-world attacks, including:
-
-- **Brute-force attacks** – rapid password guessing
-- **Credential stuffing** – reused leaked credentials
-- **Abusive login attempts** – automated and scripted abuse
-- **IP rotation attacks** – bypassing single-layer IP limits
-
-The goal is not just detection, but **resilient abuse prevention**.
+This project focuses on defending against:
+- **Brute-force attacks** — rapid password guessing
+- **Credential stuffing** — reused leaked credentials
+- **Automated abuse** — scripted login attempts
+- **Repeated malicious sources** — persistent attackers
 
 ---
 
-## 🛡️ Defense Layers Implemented
+## 🛠️ Tech Stack
+- Python 3
+- File-based logging
+- Defensive security logic
+- Git & GitHub
 
-This system uses a **defense-in-depth approach**:
-
-1. **Rate Limiting**
-   - Sliding window tracking per IP
-   - Prevents high-speed automated attacks
-
-2. **Temporary IP Blocking**
-   - Cooldown blocks after rate-limit violations
-   - Automatically lifted after time window
-
-3. **Permanent IP Ban**
-   - Escalation after repeated abuse
-   - Stops persistent malicious sources
-
-4. **Account-Level Lockout**
-   - Locks user accounts after repeated failed attempts
-   - Protects users even when attackers rotate IPs
-
-5. **Progressive Failure Delay**
-   - Adds artificial delay on failed logins
-   - Makes brute-force attacks impractical
-
-6. **State Reset on Success**
-   - Clears penalties after legitimate login
-   - Prevents unfair lockouts
+---
 
 ## 🎯 Why This Project Matters
 
-Authentication endpoints are one of the most attacked parts of any system.
-Relying on a single defense (like rate limiting alone) is not sufficient
-against modern attack patterns.
+This project demonstrates core authentication defense concepts used in
+production systems such as SaaS platforms, financial services, and
+enterprise applications.
 
-This project demonstrates how **layered security controls work together**
-to protect users and infrastructure in real-world systems.
-
-It reflects how production systems in banking, SaaS platforms, and
-enterprise applications approach authentication security — focusing on
-**resilience, fairness, and abuse prevention**, not just blocking traffic.
+It emphasizes **resilience, fairness, and observability**, rather than
+blindly blocking traffic.
 
 ---
 
 ## 📌 Future Improvements
-- IP blocking after repeated failures
-- Time-based rate limiting
-- Email or webhook alerts
+- Sliding-window rate limiting
+- Temporary and permanent IP blocking
+- Account-level lockout
+- Progressive failure delays
 - REST API integration
+- Alerting via email or webhooks
