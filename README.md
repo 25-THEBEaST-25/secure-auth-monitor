@@ -1,63 +1,73 @@
 # SecureAuth Monitor 🔐
 
 SecureAuth Monitor is a Python-based authentication security system
-designed to detect and respond to brute-force and abusive login behavior.
-It simulates how real-world systems monitor authentication attempts and
-apply defensive controls to protect users and infrastructure.
+that defends against brute-force attacks, credential abuse, and
+automated login threats using a layered, defense-in-depth approach.
+
+It simulates how real-world systems monitor authentication behavior,
+detect abuse patterns, and apply escalating protections.
 
 ---
 
 ## 🧠 Problem
 
-Authentication endpoints are one of the most frequently attacked parts
-of modern applications. Common threats include brute-force attacks,
-credential stuffing, and automated abuse.
+Authentication endpoints are among the most targeted components of
+modern applications. Attackers commonly use brute-force attempts,
+credential stuffing, and IP rotation to bypass weak defenses.
 
-Relying on a single defense mechanism is often insufficient against
-real-world attack patterns.
+Single-layer protections are insufficient against these threats.
 
 ---
 
 ## 🛡️ Solution
 
-SecureAuth Monitor applies a **defense-in-depth approach** to
-authentication security by tracking login behavior, detecting abuse
-patterns, and applying escalating protections.
+SecureAuth Monitor combines multiple defensive controls to protect
+authentication systems while remaining fair to legitimate users.
+
+The system tracks login behavior, applies rate limits, escalates
+penalties for abusive sources, and resets state after successful
+authentication.
 
 ---
 
 ## 🚀 Key Features
-- Logs every login attempt with timestamp, IP address, and status
-- Tracks repeated failed login attempts per IP
-- Detects brute-force-like behavior using configurable thresholds
-- Resets failure counters after successful authentication
-- Persistent logging for audit and analysis
+- Sliding-window rate limiting per IP
+- Temporary and permanent IP blocking with escalation
+- Account-level lockout independent of IP
+- Progressive delay on repeated failures
+- Secure password verification using bcrypt
+- Automatic state reset after successful login
+- Detailed logging of authentication events
 
 ---
 
 ## 🔁 Authentication Flow
 
-1. Login attempt is received
-2. Attempt is logged with metadata (IP, timestamp, status)
-3. Failed attempts are tracked per IP
-4. Threshold violations trigger security alerts
-5. Successful login clears accumulated penalties
+1. Login request received
+2. Permanent and temporary IP block checks
+3. Account-level lock check
+4. Sliding-window rate limit evaluation
+5. Password verification (bcrypt)
+6. Authorization check (RBAC)
+7. State reset or escalation based on outcome
+8. Event logging
 
 ---
 
 ## 🧠 Threat Model
 
-This project focuses on defending against:
+This project defends against:
 - **Brute-force attacks** — rapid password guessing
 - **Credential stuffing** — reused leaked credentials
 - **Automated abuse** — scripted login attempts
-- **Repeated malicious sources** — persistent attackers
+- **IP rotation attacks** — bypassing IP-only defenses
 
 ---
 
 ## 🛠️ Tech Stack
 - Python 3
-- File-based logging
+- bcrypt for secure password hashing
+- Time-based sliding window algorithms
 - Defensive security logic
 - Git & GitHub
 
@@ -65,19 +75,18 @@ This project focuses on defending against:
 
 ## 🎯 Why This Project Matters
 
-This project demonstrates core authentication defense concepts used in
-production systems such as SaaS platforms, financial services, and
-enterprise applications.
+This project reflects how production systems in SaaS platforms,
+financial services, and enterprise applications approach
+authentication security.
 
-It emphasizes **resilience, fairness, and observability**, rather than
-blindly blocking traffic.
+It emphasizes **resilience, layered defenses, and user fairness**
+rather than relying on a single blocking mechanism.
 
 ---
 
 ## 📌 Future Improvements
-- Sliding-window rate limiting
-- Temporary and permanent IP blocking
-- Account-level lockout
-- Progressive failure delays
+- External persistent storage (Redis / database)
 - REST API integration
 - Alerting via email or webhooks
+- Distributed rate limiting
+- Visualization dashboard
