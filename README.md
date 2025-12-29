@@ -53,6 +53,27 @@ authentication.
 8. Event logging
 
 ---
+## 🧱 Architecture & Attack Flow
+
+The system is designed with layered security checks to handle both
+legitimate users and hostile traffic fairly.
+
+**Request lifecycle:**
+
+1. Incoming request is checked against permanent IP bans
+2. Temporary IP blocks are evaluated
+3. Account lock status is verified
+4. Sliding-window rate limiting is applied per IP
+5. Password verification using bcrypt
+6. Authorization check (RBAC)
+7. Security state is reset on success or escalated on failure
+8. All events are logged for audit and analysis
+
+This layered approach prevents single-point failures and makes common
+attack techniques such as brute-force, IP rotation, and credential
+stuffing ineffective.
+
+ ---
 
 ## 🧠 Threat Model
 
