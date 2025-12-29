@@ -74,6 +74,33 @@ attack techniques such as brute-force, IP rotation, and credential
 stuffing ineffective.
 
  ---
+ ## 🧩 System Architecture (High-Level)
+
+[ Client / Attacker ]
+          |
+          v
+[ IP Block Check (Permanent / Temporary) ]
+          |
+          v
+[ Account Lock Check ]
+          |
+          v
+[ Sliding-Window Rate Limiter ]
+          |
+          v
+[ Password Verification (bcrypt) ]
+          |
+          v
+[ Authorization (RBAC) ]
+          |
+          v
+[ Logging & State Update ]
+      |           |
+      |           |
+      v           v
+[ Reset State ] [ Escalate Penalties ]
+
+
 
 ## 🧠 Threat Model
 
