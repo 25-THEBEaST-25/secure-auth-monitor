@@ -54,6 +54,18 @@ authentication.
 
 --- 
 
+## 🎯 Why This Project Exists
+
+Most authentication demos stop at password checks.
+Real-world systems fail because attackers exploit **rate limits, IP rotation,
+credential stuffing, and weak escalation logic**.
+
+This project was built to simulate **how production-grade authentication systems
+actually defend themselves**, using layered controls, progressive penalties,
+and clear observability — not just happy-path logins.
+
+---
+
 ## 🧱 Architecture & Attack Flow
 
 The system is designed with layered security checks to handle both
