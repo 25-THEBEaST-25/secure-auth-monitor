@@ -81,15 +81,19 @@ stuffing ineffective.
 ### 🔄 Authentication Flow (High-Level)
 ```mermaid
 flowchart TD
-    A[Client / Attacker] --> B[IP Block Check]
-    B --> C[Account Lock Check]
-    C --> D[Rate Limiter]
-    D --> E[Password Verification (bcrypt)]
-    E --> F[Authorization (RBAC)]
-    F --> G[Logging & State Update]
+    A["Client / Attacker"] --> B["IP Block Check"]
+    B --> C["Account Lock Check"]
+    C --> D["Rate Limiter"]
+    D --> E["Password Verification"]
+    E --> F["Authorization (RBAC)"]
+    F --> G["Logging & State Update"]
 
-    G -->|Success| H[Reset State]
-    G -->|Failure| I[Escalate Penalties]
+    G -->|Success| H["Reset State"]
+    G -->|Failure| I["Escalate Penalties"]
+```
+
+
+
 
 
 
