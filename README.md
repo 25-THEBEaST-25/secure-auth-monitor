@@ -264,3 +264,12 @@ are intentionally kept out of scope.
 - Alerting via email or webhooks
 - Distributed rate limiting
 - Visualization dashboard
+
+  ---
+### 🟢 Year-End Note
+
+This project reflects consistent iteration,
+learning through implementation,
+and a focus on understanding real-world security problems
+rather than chasing surface-level solutions.
+
