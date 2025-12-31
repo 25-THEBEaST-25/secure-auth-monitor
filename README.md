@@ -127,6 +127,12 @@ It emphasizes **resilience, layered defenses, and user fairness**
 rather than relying on a single blocking mechanism.
 
 ---
+## Design Philosophy
+This project follows a defense-in-depth approach.
+Each authentication layer is designed to fail safely,
+limit attacker progress, and protect legitimate users
+without relying on a single control.
+
 
 ## 📌 Future Improvements
 - External persistent storage (Redis / database)
