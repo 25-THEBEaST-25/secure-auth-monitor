@@ -219,6 +219,15 @@ without relying on a single control.
 
 ---
 
+### ⚙️ Operational Notes
+
+- In-memory state resets on application restart
+- Intended for single-instance execution
+- Logging output can be redirected to files or SIEM tools
+- Configuration values should be tuned based on environment
+
+---
+
 ## Limitations
 - This is a simulated authentication system, not production-ready
 - No MFA or CAPTCHA implemented
