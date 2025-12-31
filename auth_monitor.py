@@ -87,6 +87,7 @@ def login(username, password, ip):
         return
 
 
+
     # 3️⃣ RATE LIMIT TRACKING
     now = time.time()
     attempts = attempt_timestamps.get(ip, [])
@@ -110,6 +111,15 @@ def login(username, password, ip):
         return
 
     # 4️⃣ AUTHENTICATION (bcrypt)
+    # If authentication succeeds:
+# - reset failure counters
+# - remove temporary blocks
+# - allow access
+
+# If authentication fails:
+# - increment failure count
+# - apply delay / temporary block
+# - escalate penalties if needed
     user = USERS.get(username)
 
     if not user:
