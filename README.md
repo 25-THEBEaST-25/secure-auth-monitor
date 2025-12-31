@@ -191,6 +191,15 @@ without relying on a single control.
 
 ---
 
+### ⚠️ Assumptions & Non-Goals
+
+- This project focuses on authentication abuse mitigation, not identity verification
+- Network-level protections (WAF, firewall rules) are assumed external
+- CAPTCHA/MFA are intentionally excluded to highlight backend controls
+- Designed for educational and architectural demonstration purposes
+
+---
+
 ## 📌 Future Improvements
 - External persistent storage (Redis / database)
 - REST API integration
