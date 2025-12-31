@@ -133,6 +133,12 @@ Each authentication layer is designed to fail safely,
 limit attacker progress, and protect legitimate users
 without relying on a single control.
 
+## Limitations
+- This is a simulated authentication system, not production-ready
+- No MFA or CAPTCHA implemented
+- Uses in-memory state instead of persistent storage
+
+
 
 ## 📌 Future Improvements
 - External persistent storage (Redis / database)
