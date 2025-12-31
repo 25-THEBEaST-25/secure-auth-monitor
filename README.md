@@ -52,7 +52,8 @@ authentication.
 7. State reset or escalation based on outcome
 8. Event logging
 
----
+--- 
+
 ## 🧱 Architecture & Attack Flow
 
 The system is designed with layered security checks to handle both
@@ -78,6 +79,8 @@ stuffing ineffective.
  ## Documentation
 - [Threat Model](docs/THREAT_MODEL.md)
 
+---
+
 ### 🔄 Authentication Flow (High-Level)
 ```mermaid
 flowchart TD
@@ -91,12 +94,7 @@ flowchart TD
     G -->|Success| H["Reset State"]
     G -->|Failure| I["Escalate Penalties"]
 ```
-
-
-
-
-
-
+---
 
 ## 🧠 Threat Model
 
@@ -105,6 +103,18 @@ This project defends against:
 - **Credential stuffing** — reused leaked credentials
 - **Automated abuse** — scripted login attempts
 - **IP rotation attacks** — bypassing IP-only defenses
+
+---
+
+## 🔐 Security Design Principles
+
+This project follows core security engineering principles:
+
+- **Defense in Depth** – Multiple layered controls instead of a single point of failure
+- **Fail Securely** – Failed authentication increases restrictions, never access
+- **Least Privilege** – Authorization enforced after authentication (RBAC)
+- **Rate Limiting & Abuse Resistance** – Prevents brute-force and automated attacks
+- **Observability** – All attempts are logged for detection and analysis
 
 ---
 
@@ -133,12 +143,14 @@ Each authentication layer is designed to fail safely,
 limit attacker progress, and protect legitimate users
 without relying on a single control.
 
+---
+
 ## Limitations
 - This is a simulated authentication system, not production-ready
 - No MFA or CAPTCHA implemented
 - Uses in-memory state instead of persistent storage
 
-
+---
 
 ## 📌 Future Improvements
 - External persistent storage (Redis / database)
