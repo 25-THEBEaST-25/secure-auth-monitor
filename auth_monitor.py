@@ -126,6 +126,8 @@ def login(username, password, ip):
 # - apply delay / temporary block
 # - escalate penalties if needed
     user = USERS.get(username)
+    # Escalate penalties only after repeated failures
+
 
     if not user:
         print("❌ Unknown user")
