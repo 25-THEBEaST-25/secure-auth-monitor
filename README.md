@@ -79,6 +79,18 @@ and clear observability — not just happy-path logins.
 
 ---
 
+### 🔐 Security Controls Mapping
+
+| Threat                     | Control Applied                     | Location |
+|----------------------------|-------------------------------------|----------|
+| Brute-force attacks        | Rate limiting, progressive delay    | auth_monitor.py |
+| Credential stuffing        | Account lockout, IP blocking        | auth_monitor.py |
+| IP rotation abuse          | Sliding window + escalation         | auth_monitor.py |
+| Privilege misuse           | RBAC authorization checks           | auth_monitor.py |
+| Detection & forensics      | Structured event logging            | auth_monitor.py |
+
+---
+
 ## 🧱 Architecture & Attack Flow
 
 The system is designed with layered security checks to handle both
@@ -119,15 +131,6 @@ flowchart TD
     G -->|Success| H["Reset State"]
     G -->|Failure| I["Escalate Penalties"]
 ```
----
-
-## 🧠 Threat Model
-
-This project defends against:
-- **Brute-force attacks** — rapid password guessing
-- **Credential stuffing** — reused leaked credentials
-- **Automated abuse** — scripted login attempts
-- **IP rotation attacks** — bypassing IP-only defenses
 
 ---
 
@@ -142,6 +145,18 @@ This project explicitly models and mitigates:
 - Abuse via automated scripts
 
 Each control is designed to fail safely and escalate progressively.
+
+---
+
+### 🔐 Security Controls Mapping
+
+| Threat                     | Control Applied                     | Location |
+|----------------------------|-------------------------------------|----------|
+| Brute-force attacks        | Rate limiting, progressive delay    | auth_monitor.py |
+| Credential stuffing        | Account lockout, IP blocking        | auth_monitor.py |
+| IP rotation abuse          | Sliding window + escalation         | auth_monitor.py |
+| Privilege misuse           | RBAC authorization checks           | auth_monitor.py |
+| Detection & forensics      | Structured event logging            | auth_monitor.py |
 
 ---
 
