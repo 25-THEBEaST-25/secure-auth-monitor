@@ -50,6 +50,11 @@ def is_temp_blocked(ip):
 def authorize(username, role):
     """Check if user has the required role"""
     return username == "admin" and role == "admin"
+    """
+    Handles user authentication with layered security checks.
+    Applies rate limiting, IP blocking, account lockout,
+    and authorization before granting access.
+    """
 
 def failure_delay(ip):
     strikes = rate_limit_strikes.get(ip, 0)
