@@ -241,6 +241,14 @@ without relying on a single control.
 
 ---
 
+### 📌 Project Scope
+
+This project focuses on backend authentication security logic.
+Frontend handling, UI validation, and infrastructure-level defenses
+are intentionally kept out of scope.
+
+---
+
 ### ⚠️ Assumptions & Non-Goals
 
 - This project focuses on authentication abuse mitigation, not identity verification
