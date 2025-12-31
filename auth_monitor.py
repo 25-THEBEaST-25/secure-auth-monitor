@@ -1,3 +1,10 @@
+# ================================
+# Configuration Constants
+# ================================
+# These values control rate limiting,
+# lockout thresholds, and penalty escalation.
+# Tweaking them changes system behavior.
+
 import time
 import bcrypt
 from datetime import datetime
