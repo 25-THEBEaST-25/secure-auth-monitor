@@ -118,6 +118,20 @@ This project defends against:
 
 ---
 
+### 🎯 Explicit Threat Coverage
+
+This project explicitly models and mitigates:
+
+- Brute-force password guessing
+- Credential stuffing attacks
+- IP rotation to bypass rate limits
+- Account enumeration attempts
+- Abuse via automated scripts
+
+Each control is designed to fail safely and escalate progressively.
+
+---
+
 ## 🔐 Security Design Principles
 
 This project follows core security engineering principles:
