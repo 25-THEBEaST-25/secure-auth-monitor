@@ -172,6 +172,26 @@ This project follows core security engineering principles:
 
 ---
 
+### 🧠 Example Abuse Scenarios
+
+**Scenario 1: Brute-force attack**
+- Attacker attempts rapid password guesses
+- Rate limiter triggers
+- Progressive delays applied
+- Account temporarily locked
+
+**Scenario 2: Credential stuffing**
+- Multiple usernames from same IP
+- IP-based rate limiting + account lock checks
+- Escalation to temporary IP block
+
+**Scenario 3: IP rotation attack**
+- Attacker rotates IPs to bypass limits
+- Sliding-window rate limiting detects abnormal patterns
+- Penalties escalate across accounts
+
+---
+
 ## 🛠️ Tech Stack
 - Python 3
 - bcrypt for secure password hashing
