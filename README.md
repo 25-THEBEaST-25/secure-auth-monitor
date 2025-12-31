@@ -74,6 +74,10 @@ attack techniques such as brute-force, IP rotation, and credential
 stuffing ineffective.
 
  ---
+
+ ## Documentation
+- [Threat Model](docs/THREAT_MODEL.md)
+
  ## 🧩 System Architecture (High-Level)
 
 [ Client / Attacker ]
