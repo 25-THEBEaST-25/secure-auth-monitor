@@ -66,6 +66,19 @@ and clear observability — not just happy-path logins.
 
 ---
 
+### 🧩 Control-to-Threat Mapping
+
+| Security Control        | Threat Mitigated                         |
+|-------------------------|------------------------------------------|
+| Rate Limiting           | Brute-force & automated abuse            |
+| IP Blocking             | IP rotation & repeated malicious traffic |
+| Account Lockout         | Credential stuffing                      |
+| Progressive Delays      | High-speed password guessing             |
+| RBAC Authorization      | Privilege escalation                     |
+| Event Logging           | Post-incident analysis & forensics       |
+
+---
+
 ## 🧱 Architecture & Attack Flow
 
 The system is designed with layered security checks to handle both
