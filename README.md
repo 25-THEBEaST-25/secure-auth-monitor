@@ -1,3 +1,9 @@
+## 📌 Quick Navigation
+- [Architecture](#system-architecture)
+- [Threat Model](#threat-model)
+- [Security Controls](#security-controls-mapping)
+- [Limitations](#limitations)
+
 # SecureAuth Monitor 🔐
 
 SecureAuth Monitor is a Python-based authentication security system
