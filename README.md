@@ -78,31 +78,19 @@ stuffing ineffective.
  ## Documentation
 - [Threat Model](docs/THREAT_MODEL.md)
 
- ## 🧩 System Architecture (High-Level)
+### 🔄 Authentication Flow (High-Level)
+```mermaid
+flowchart TD
+    A[Client / Attacker] --> B[IP Block Check]
+    B --> C[Account Lock Check]
+    C --> D[Rate Limiter]
+    D --> E[Password Verification (bcrypt)]
+    E --> F[Authorization (RBAC)]
+    F --> G[Logging & State Update]
 
-[ Client / Attacker ]
-          |
-          v
-[ IP Block Check (Permanent / Temporary) ]
-          |
-          v
-[ Account Lock Check ]
-          |
-          v
-[ Sliding-Window Rate Limiter ]
-          |
-          v
-[ Password Verification (bcrypt) ]
-          |
-          v
-[ Authorization (RBAC) ]
-          |
-          v
-[ Logging & State Update ]
-      |           |
-      |           |
-      v           v
-[ Reset State ] [ Escalate Penalties ]
+    G -->|Success| H[Reset State]
+    G -->|Failure| I[Escalate Penalties]
+
 
 
 
