@@ -220,6 +220,14 @@ This project follows core security engineering principles:
 
 ---
 
+## 📂 How to Read the Code
+
+- `auth_monitor.py` contains the core authentication and abuse-prevention logic
+- Rate limiting, lockout, and escalation logic are intentionally kept explicit
+- Logging is centralized to make attack timelines easy to follow
+
+---
+
 ## 🎯 Why This Project Matters
 
 This project reflects how production systems in SaaS platforms,
