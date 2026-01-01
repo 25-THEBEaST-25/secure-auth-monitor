@@ -178,6 +178,19 @@ This project follows core security engineering principles:
 
 ---
 
+## ⚖️ Key Design Tradeoffs
+
+- **IP-based controls vs user-based controls**  
+  IP checks are fast but unreliable against proxies, so account-level controls are also enforced.
+
+- **Security vs user experience**  
+  Progressive delays and temporary lockouts are preferred over hard failures to avoid harming legitimate users.
+
+- **Simplicity vs completeness**  
+  In-memory state is used to keep the system readable and auditable, even though persistence would be required in production.
+
+---
+
 ### 🧠 Example Abuse Scenarios
 
 **Scenario 1: Brute-force attack**
