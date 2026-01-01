@@ -306,10 +306,10 @@ The goal is to demonstrate backend authentication abuse mitigation logic clearly
 - Visualization dashboard
 
   ---
-### 🟢 Year-End Note
+### 🟢 Iteration Note
 
-This project reflects consistent iteration,
-learning through implementation,
-and a focus on understanding real-world security problems
-rather than chasing surface-level solutions.
+This project evolved through incremental improvements,
+guided by real attack patterns and security tradeoffs,
+rather than checklist-based features.
+
 
