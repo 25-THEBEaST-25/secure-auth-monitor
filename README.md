@@ -271,6 +271,17 @@ are intentionally kept out of scope.
 
 ---
 
+## 🚫 What This Project Is Not
+
+- Not a full IAM or identity provider
+- Not a replacement for MFA, CAPTCHA, or WAFs
+- Not designed to withstand nation-state adversaries
+- Not optimized for horizontal scaling
+
+The goal is to demonstrate backend authentication abuse mitigation logic clearly and correctly.
+
+---
+
 ## 📌 Future Improvements
 - External persistent storage (Redis / database)
 - REST API integration
