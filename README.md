@@ -255,6 +255,14 @@ without relying on a single control.
 
 ---
 
+## 📊 Observability Metrics (Simulated)
+
+- Failed login attempts per IP
+- Lockout frequency per account
+- Average time to escalation
+
+---
+
 ## Limitations
 - This is a simulated authentication system, not production-ready
 - No MFA or CAPTCHA implemented
