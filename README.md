@@ -1,8 +1,9 @@
 ## 📌 Quick Navigation
-- [Architecture](#system-architecture)
+- [Overview](#secureauth-monitor)
 - [Threat Model](#threat-model)
 - [Security Controls](#security-controls-mapping)
 - [Limitations](#limitations)
+- [Detailed Architecture](docs/ARCHITECTURE.md)
 
 # SecureAuth Monitor 🔐
 
