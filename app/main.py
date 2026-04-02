@@ -165,3 +165,11 @@ def login_api(request: LoginRequest):
         response["reason"] = "Legitimate login"
 
     return response
+@app.get("/dashboard")
+def dashboard():
+    return {
+        "blocked_ips": list(blocked_ips),
+        "temp_blocked_ips": list(temp_blocked_at.keys()),
+        "rate_limit_strikes": rate_limit_strikes,
+        "account_failures": account_failures
+    }
