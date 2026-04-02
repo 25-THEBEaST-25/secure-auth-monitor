@@ -4,7 +4,9 @@
 # These values control rate limiting,
 # lockout thresholds, and penalty escalation.
 # Tweaking them changes system behavior.
+from fastapi import FastAPI
 
+app = FastAPI()
 import time
 import bcrypt
 from datetime import datetime
@@ -161,6 +163,10 @@ def login(username, password, ip):
             log_attempt(username, ip, "ACCOUNT_LOCKED")
 
         failure_delay(ip)
+
+@app.get("/")
+def home():
+    return {"message": "SecureAuth Monitor is running 🔐"}
 
 
 
