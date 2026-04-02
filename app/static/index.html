@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SecureAuth Dashboard</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: Arial;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        .card {
+            background: #1e293b;
+            margin: 20px auto;
+            padding: 20px;
+            width: 300px;
+            border-radius: 10px;
+        }
+        .danger { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .safe { color: #22c55e; }
+    </style>
+</head>
+<body>
+
+<h1>🔐 SecureAuth Dashboard</h1>
+
+<div class="card">
+    <h2>Blocked IPs</h2>
+    <p id="blocked"></p>
+</div>
+
+<div class="card">
+    <h2>Temp Blocked IPs</h2>
+    <p id="temp"></p>
+</div>
+
+<div class="card">
+    <h2>Account Failures</h2>
+    <p id="failures"></p>
+</div>
+
+<script>
+async function loadData() {
+    const res = await fetch("http://127.0.0.1:8000/dashboard");
+    const data = await res.json();
+
+    document.getElementById("blocked").innerText = JSON.stringify(data.blocked_ips);
+    document.getElementById("temp").innerText = JSON.stringify(data.temp_blocked_ips);
+    document.getElementById("failures").innerText = JSON.stringify(data.account_failures);
+}
+
+// auto refresh every 2 sec
+setInterval(loadData, 2000);
+loadData();
+</script>
+
+</body>
+</html>
