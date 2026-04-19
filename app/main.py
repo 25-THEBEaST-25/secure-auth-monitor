@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
-from pydantic_settings import BaseSettings
+from pydantic import BaseSettings
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List, Tuple
 import time
