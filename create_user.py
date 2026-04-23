@@ -1,6 +1,9 @@
-from app.db.database import SessionLocal
+from app.db.database import SessionLocal, Base, engine
 from app.db.models import User
 from app.core.security import hash_password
+
+# 🔥 CREATE TABLES FIRST
+Base.metadata.create_all(bind=engine)
 
 db = SessionLocal()
 
