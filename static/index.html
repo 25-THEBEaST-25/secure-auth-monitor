@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Monitor</title>
+</head>
+<body>
+    <h1>Security Dashboard</h1>
+    <button onclick="load()">Refresh</button>
+    <pre id="data"></pre>
+
+    <script>
+        async function load() {
+            const res = await fetch('/api/dashboard');
+            const data = await res.json();
+            document.getElementById("data").innerText =
+                JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
