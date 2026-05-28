@@ -1,11 +1,8 @@
-from fastapi import APIRouter
-from app.services.security_service import FAILED_ATTEMPTS, BLOCKED_IPS
+from fastapi import APIRouter, Depends
+from app.core.security import get_current_user
 
 router = APIRouter()
 
-@router.get("/dashboard")
-def dashboard():
-    return {
-        "failed_attempts": FAILED_ATTEMPTS,
-        "blocked_ips": BLOCKED_IPS
-    }
+@router.get("/protected")
+def protected(user: str = Depends(get_current_user)):
+    return {"message": f"Welcome {user}, access granted"}
