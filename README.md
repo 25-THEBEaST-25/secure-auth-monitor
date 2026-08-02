@@ -1,3 +1,8 @@
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)
+![Security](https://img.shields.io/badge/Security-Authentication-red)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Made with Love](https://img.shields.io/badge/Made%20With-%E2%9D%A4-red)
 # Secure Auth Monitor
 
 Production-inspired authentication security system built in Python.
