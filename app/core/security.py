@@ -1,58 +1,53 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
+import jwt
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-bearer_scheme = HTTPBearer(auto_error=False)
+BCRYPT_MAX_BYTES = 72
+
+
+def hash_password(password: str) -> str:
+    raw = password.encode()
+    if len(raw) > BCRYPT_MAX_BYTES:
+        # bcrypt ignores everything after 72 bytes; refuse instead of silently truncating.
+        raise ValueError(f"password longer than {BCRYPT_MAX_BYTES} bytes")
+    return bcrypt.hashpw(raw, bcrypt.gensalt()).decode()
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    raw = password.encode()
+    if len(raw) > BCRYPT_MAX_BYTES:
+        # Can never match a stored hash; still pay the bcrypt cost for uniform timing.
+        bcrypt.checkpw(b"x", DUMMY_HASH.encode())
+        return False
+    return bcrypt.checkpw(raw, hashed.encode())
+
 
 # Verified against when the username does not exist, so an unknown user
 # costs the same bcrypt work as a wrong password (no timing-based enumeration).
-DUMMY_HASH = pwd_context.hash("dummy-password-for-timing")
+DUMMY_HASH = hash_password("dummy-password-for-timing")
 
 
-def hash_password(password: str):
-    password = password[:72]  # bcrypt limit fix
-    return pwd_context.hash(password)
+def create_access_token(user_id: int, token_version: int, expires_delta: timedelta | None = None) -> str:
+    now = datetime.now(UTC)
+    payload = {
+        "sub": str(user_id),
+        # Bumped on logout, disable and role change; older tokens stop working.
+        "tv": token_version,
+        "iat": now,
+        "exp": now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-def verify_password(password: str, hashed: str):
-    return pwd_context.verify(password, hashed)
-
-
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+def decode_access_token(token: str) -> dict:
+    """Raises jwt.PyJWTError on any invalid token."""
+    # Pin the algorithm list so a token can't pick its own (e.g. "none").
+    return jwt.decode(
+        token,
+        settings.SECRET_KEY,
+        algorithms=[settings.ALGORITHM],
+        options={"require": ["sub", "exp", "iat", "tv"]},
     )
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-
-
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-) -> str:
-    unauthorized = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid or missing token",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    if credentials is None:
-        raise unauthorized
-
-    try:
-        # Pin the algorithm list so a token can't pick its own (e.g. "none").
-        payload = jwt.decode(
-            credentials.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
-    except JWTError:
-        raise unauthorized
-
-    username = payload.get("sub")
-    if not username:
-        raise unauthorized
-    return username

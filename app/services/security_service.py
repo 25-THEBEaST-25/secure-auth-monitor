@@ -1,66 +1,119 @@
+"""Brute-force protection: per-IP blocking and per-account lockout.
+
+State lives in the `throttles` table so every worker sees the same counters
+and blocks survive restarts. Counter updates are single atomic UPDATEs, so
+concurrent failures from parallel requests are all counted.
+"""
 import time
 
+from sqlalchemy import case, delete, select, update
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.db.models import Throttle
+
+IP = "ip"
+ACCOUNT = "account"
+
 # Indirection so tests can move the clock without patching time globally.
-now = time.monotonic
-
-# In-memory state: resets on restart and is not shared between worker
-# processes. Fine for a single-process demo; a real deployment would need
-# a shared store.
-FAILED_ATTEMPTS = {}
-BLOCKED_IPS = {}
-ACCOUNT_FAILURES = {}
-LOCKED_ACCOUNTS = {}
-
-MAX_ATTEMPTS = 5
-BLOCK_TIME = 60
-
-MAX_ACCOUNT_FAILURES = 5
-ACCOUNT_LOCK_TIME = 300
+now = time.time
 
 
-def _still_blocked(table: dict, key: str) -> bool:
-    until = table.get(key)
-    if until is None:
-        return False
-    if now() < until:
+def _limits(kind: str) -> tuple[int, int]:
+    if kind == IP:
+        return settings.IP_MAX_FAILURES, settings.IP_BLOCK_SECONDS
+    return settings.ACCOUNT_MAX_FAILURES, settings.ACCOUNT_LOCK_SECONDS
+
+
+def _ensure_row(db: Session, kind: str, key: str) -> None:
+    exists = db.scalar(select(Throttle.id).where(Throttle.kind == kind, Throttle.key == key))
+    if exists:
+        return
+    try:
+        with db.begin_nested():
+            db.add(Throttle(kind=kind, key=key, failures=0, window_start=now()))
+    except IntegrityError:
+        pass  # another request created it first
+
+
+def blocked_seconds(db: Session, kind: str, key: str) -> int | None:
+    """Seconds left on a block, or None if not blocked. Permanent bans return -1."""
+    row = db.scalar(select(Throttle).where(Throttle.kind == kind, Throttle.key == key))
+    if row is None:
+        return None
+    if row.permanent:
+        return -1
+    if row.blocked_until and row.blocked_until > now():
+        return max(1, int(row.blocked_until - now()))
+    return None
+
+
+def _count_failure(db: Session, kind: str, key: str) -> bool:
+    """Count one failure. Returns True if this failure triggered a new block."""
+    max_failures, block_seconds = _limits(kind)
+    t = now()
+    _ensure_row(db, kind, key)
+
+    stale = Throttle.window_start < t - settings.FAILURE_WINDOW_SECONDS
+    failures = db.scalar(
+        update(Throttle)
+        .where(Throttle.kind == kind, Throttle.key == key)
+        .values(
+            failures=case((stale, 1), else_=Throttle.failures + 1),
+            window_start=case((stale, t), else_=Throttle.window_start),
+        )
+        .returning(Throttle.failures)
+    )
+    if failures >= max_failures:
+        db.execute(
+            update(Throttle)
+            .where(Throttle.kind == kind, Throttle.key == key)
+            .values(failures=0, window_start=t, blocked_until=t + block_seconds)
+        )
         return True
-    del table[key]
     return False
 
 
-def is_ip_allowed(ip: str):
-    return not _still_blocked(BLOCKED_IPS, ip)
-
-
-def ip_retry_after(ip: str) -> int:
-    return max(1, int(BLOCKED_IPS.get(ip, 0) - now()))
-
-
-def is_account_locked(username: str):
-    return _still_blocked(LOCKED_ACCOUNTS, username)
-
-
-def record_failure(ip: str, username: str):
-    FAILED_ATTEMPTS[ip] = FAILED_ATTEMPTS.get(ip, 0) + 1
-    if FAILED_ATTEMPTS[ip] >= MAX_ATTEMPTS:
-        BLOCKED_IPS[ip] = now() + BLOCK_TIME
-        FAILED_ATTEMPTS[ip] = 0
-
+def record_failure(db: Session, ip: str, username: str) -> list[str]:
+    """Returns which blocks were newly triggered: "ip" and/or "account"."""
+    triggered = []
+    if _count_failure(db, IP, ip):
+        triggered.append(IP)
     # Tracked per username whether or not the account exists, so a lockout
     # response doesn't reveal which usernames are real. This catches
     # credential stuffing spread across many IPs.
-    ACCOUNT_FAILURES[username] = ACCOUNT_FAILURES.get(username, 0) + 1
-    if ACCOUNT_FAILURES[username] >= MAX_ACCOUNT_FAILURES:
-        LOCKED_ACCOUNTS[username] = now() + ACCOUNT_LOCK_TIME
-        ACCOUNT_FAILURES[username] = 0
+    if _count_failure(db, ACCOUNT, username):
+        triggered.append(ACCOUNT)
+    return triggered
 
 
-def record_success(username: str):
+def record_success(db: Session, username: str) -> None:
     # Only the account counter is cleared. Clearing the IP counter would let
     # an attacker with one valid login reset their budget for spraying others.
-    ACCOUNT_FAILURES.pop(username, None)
+    db.execute(
+        update(Throttle)
+        .where(Throttle.kind == ACCOUNT, Throttle.key == username)
+        .values(failures=0)
+    )
 
 
-def reset_state():
-    for table in (FAILED_ATTEMPTS, BLOCKED_IPS, ACCOUNT_FAILURES, LOCKED_ACCOUNTS):
-        table.clear()
+def ban_ip(db: Session, ip: str) -> None:
+    _ensure_row(db, IP, ip)
+    db.execute(update(Throttle).where(Throttle.kind == IP, Throttle.key == ip).values(permanent=True))
+
+
+def clear(db: Session, kind: str, key: str) -> bool:
+    """Lift any block or ban. Returns False if there was nothing to clear."""
+    result = db.execute(delete(Throttle).where(Throttle.kind == kind, Throttle.key == key))
+    return result.rowcount > 0
+
+
+def active_blocks(db: Session) -> list[Throttle]:
+    return list(
+        db.scalars(
+            select(Throttle)
+            .where((Throttle.permanent.is_(True)) | (Throttle.blocked_until > now()))
+            .order_by(Throttle.kind, Throttle.key)
+        )
+    )

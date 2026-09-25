@@ -1,26 +1,36 @@
-"""Create a user: python create_user.py <username>  (prompts for the password)"""
+"""Create a user from the command line (bootstraps the first admin).
+
+    python create_user.py alice            # prompts for the password
+    python create_user.py alice --admin
+"""
+import argparse
 import sys
 from getpass import getpass
 
-from app.db.database import SessionLocal, Base, engine
-from app.db.models import User
-from app.core.security import hash_password
+from pydantic import ValidationError
 
-if len(sys.argv) != 2:
-    sys.exit("usage: python create_user.py <username>")
+from app.db.database import SessionLocal
+from app.schemas.user import UserCreate
+from app.services import auth_service
 
-username = sys.argv[1]
+parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+parser.add_argument("username")
+parser.add_argument("--admin", action="store_true", help="give the user the admin role")
+args = parser.parse_args()
+
 password = getpass("Password: ")
-if len(password) < 8:
-    sys.exit("Password must be at least 8 characters")
+if password != getpass("Repeat password: "):
+    sys.exit("Passwords don't match")
 
-Base.metadata.create_all(bind=engine)
+try:
+    data = UserCreate(username=args.username, password=password, role="admin" if args.admin else "user")
+except ValidationError as err:
+    sys.exit("; ".join(e["msg"] for e in err.errors()))
 
-db = SessionLocal()
-if db.query(User).filter(User.username == username).first():
-    sys.exit(f"User '{username}' already exists")
+with SessionLocal() as db:
+    if auth_service.get_by_username(db, data.username):
+        sys.exit(f"User '{data.username}' already exists")
+    auth_service.create_user(db, data.username, data.password, data.role)
+    db.commit()
 
-db.add(User(username=username, hashed_password=hash_password(password)))
-db.commit()
-
-print(f"User '{username}' created")
+print(f"Created {data.role} '{data.username}'")

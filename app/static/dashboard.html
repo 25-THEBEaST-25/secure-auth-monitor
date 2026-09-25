@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Secure Auth Monitor</title>
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <script src="/static/dashboard.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Secure Auth Monitor</h1>
+    <div id="session" hidden>
+      <span id="whoami"></span>
+      <button id="logout" type="button">Log out</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="login-view" class="card narrow">
+      <h2>Admin sign in</h2>
+      <form id="login-form">
+        <label>Username <input name="username" autocomplete="username" required></label>
+        <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Sign in</button>
+        <p id="login-error" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <div id="app-view" hidden>
+      <p id="app-error" class="error" role="alert"></p>
+
+      <section class="stats" id="stats" aria-label="Last 24 hours"></section>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Active blocks</h2>
+          <form id="ban-form" class="inline">
+            <input name="ip" placeholder="IP to ban permanently" required>
+            <button type="submit">Ban</button>
+          </form>
+          <table>
+            <thead><tr><th>Type</th><th>Key</th><th>Until</th><th></th></tr></thead>
+            <tbody id="blocks"></tbody>
+          </table>
+        </section>
+
+        <section class="card">
+          <h2>Users</h2>
+          <form id="user-form" class="inline">
+            <input name="username" placeholder="username" required>
+            <input name="password" type="password" placeholder="password (8+)" autocomplete="new-password" required>
+            <select name="role"><option>user</option><option>admin</option></select>
+            <button type="submit">Add</button>
+          </form>
+          <table>
+            <thead><tr><th>User</th><th>Role</th><th>Status</th><th></th></tr></thead>
+            <tbody id="users"></tbody>
+          </table>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Security events</h2>
+        <form id="event-filter" class="inline">
+          <select name="event">
+            <option value="">All events</option>
+            <option>login_failed</option>
+            <option>login_success</option>
+            <option>ip_blocked</option>
+            <option>account_locked</option>
+            <option>login_blocked_ip</option>
+            <option>login_locked_account</option>
+            <option>login_disabled_account</option>
+            <option>admin_action</option>
+            <option>logout</option>
+          </select>
+          <input name="username" placeholder="username">
+          <input name="ip" placeholder="ip">
+          <button type="submit">Filter</button>
+        </form>
+        <table>
+          <thead><tr><th>Time</th><th>Event</th><th>User</th><th>IP</th><th>Detail</th></tr></thead>
+          <tbody id="events"></tbody>
+        </table>
+        <button id="more" type="button" hidden>Load older</button>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
