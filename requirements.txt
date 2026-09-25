@@ -3,6 +3,13 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 python-dotenv
+# passlib 1.7.4 breaks with bcrypt >= 4.1
 passlib[bcrypt]
+bcrypt<4.1
 python-jose
 pydantic
+pydantic-settings
+
+# tests
+pytest
+httpx
