@@ -222,3 +222,55 @@ def test_successful_login_does_not_reset_ip_counter(client):
     assert login(client).status_code == 200
     login(client, username="one-more", password="wrong")
     assert login(client).status_code == 429
+
+
+# --- concurrency: the failure counter must not lose updates under a race ---
+
+def test_concurrent_failures_are_all_counted_not_lost_to_a_race(db):
+    """`_count_failure` uses one atomic UPDATE...RETURNING per call, so
+    parallel callers should never clobber each other's increment. If a
+    future change turned that into a read-then-write, this would flake:
+    some of the `n` concurrent failures would be lost and the account
+    would end up with fewer than `ACCOUNT_MAX_FAILURES` recorded, so it
+    would stay unlocked instead of triggering exactly one lock."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from app.db.database import SessionLocal
+
+    n = settings.ACCOUNT_MAX_FAILURES
+
+    def fail_once(i):
+        with SessionLocal() as worker_db:
+            triggered = security_service.record_failure(worker_db, f"10.2.0.{i}", "alice")
+            worker_db.commit()
+            return triggered
+
+    with ThreadPoolExecutor(max_workers=n) as pool:
+        results = list(pool.map(fail_once, range(n)))
+
+    assert sum(ACCOUNT in triggered for triggered in results) == 1
+    assert security_service.blocked_seconds(db, ACCOUNT, "alice") is not None
+
+
+def test_concurrent_logins_lock_the_account_exactly_once(client):
+    """Same race, exercised end-to-end through the real HTTP endpoint with
+    one TestClient (and DB session) per worker thread: `n` simultaneous
+    bad-password logins for one account must still leave it locked."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    n = settings.ACCOUNT_MAX_FAILURES
+
+    def bad_login(_i):
+        return TestClient(app).post(
+            "/api/login", json={"username": "alice", "password": "wrong-password"}
+        )
+
+    with ThreadPoolExecutor(max_workers=n) as pool:
+        responses = list(pool.map(bad_login, range(n)))
+
+    assert all(res.status_code == 401 for res in responses)
+    assert login(client).status_code == 423
